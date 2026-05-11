@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Autónomo</title>
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0f0f0f">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Neto">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f0f; --surface: #1a1a1a; --border: #2a2a2a;
+    --accent: #c8f135; --accent2: #ff6b35; --text: #e8e8e8; --muted: #666;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; padding: 24px 16px 48px; -webkit-text-size-adjust: 100%; }
+  h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; color: var(--accent); margin-bottom: 4px; }
+  .subtitle { font-size: 0.72rem; color: var(--muted); margin-bottom: 28px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  .section-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .field { display: flex; align-items: center; gap: 8px; }
+  .field label { flex: 1; font-size: 0.78rem; }
+  .inp { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 1rem; padding: 8px 10px; outline: none; -webkit-appearance: none; width: 110px; text-align: right; }
+  .inp:focus { border-color: var(--accent); }
+  .unit { font-size: 0.7rem; color: var(--muted); width: 16px; }
+  .gasto-row { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; }
+  .gasto-nombre { flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; min-width: 0; padding: 4px 0; -webkit-appearance: none; }
+  .gasto-nombre::placeholder { color: var(--muted); }
+  .gasto-importe { width: 72px; background: transparent; border: none; border-left: 1px solid var(--border); color: var(--accent); font-family: 'Inter', sans-serif; font-size: 1rem; padding: 4px 0 4px 8px; text-align: right; outline: none; -webkit-appearance: none; }
+  .gasto-importe::placeholder { color: var(--muted); }
+  .tag { font-size: 0.6rem; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+  .tag-iva { background: #1a2a0a; color: var(--accent); border: 1px solid #3a5a1a; }
+  .tag-sin { background: #2a1a0a; color: var(--accent2); border: 1px solid #5a3a1a; }
+  .resultado { background: var(--surface); border: 1px solid var(--accent); border-radius: 8px; padding: 20px 16px; margin-bottom: 12px; }
+  .resultado-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .linea { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.76rem; border-bottom: 1px solid var(--border); }
+  .linea:last-child { border-bottom: none; }
+  .concepto { color: var(--muted); padding-right: 8px; }
+  .valor { font-size: 0.82rem; white-space: nowrap; }
+  .valor.neg { color: var(--accent2); }
+  .valor.pos { color: var(--accent); }
+  .total-line { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; padding-top: 12px; border-top: 2px solid var(--accent); }
+  .total-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+  .total-valor { font-size: 2rem; font-weight: 800; color: var(--accent); letter-spacing: -0.03em; }
+  .total-valor.malo { color: var(--accent2); }
+  .aviso { font-size: 0.65rem; color: var(--muted); margin-top: 10px; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 10px; }
+  .btn-calc { width: 100%; margin-top: 4px; padding: 14px; background: var(--accent); border: none; border-radius: 6px; color: #000; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; -webkit-appearance: none; }
+</style>
+</head>
+<body>
+
+<h1>NETO AUTÓNOMO</h1>
+<p class="subtitle">Calculadora TRADE · IVA 21%</p>
+
+<div class="section">
+  <div class="section-title">Ingresos</div>
+  <div class="field">
+    <label>Cobro mensual (IVA incluido)</label>
+    <input class="inp" type="text" inputmode="decimal" id="ingreso" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Gastos con IVA</div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-iva">+IVA</span>
+    <input class="gasto-importe iva" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-iva">+IVA</span>
+    <input class="gasto-importe iva" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-iva">+IVA</span>
+    <input class="gasto-importe iva" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-iva">+IVA</span>
+    <input class="gasto-importe iva" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-iva">+IVA</span>
+    <input class="gasto-importe iva" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Gastos sin IVA (autónomos, seguros…)</div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-sin">S/IVA</span>
+    <input class="gasto-importe sin" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-sin">S/IVA</span>
+    <input class="gasto-importe sin" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-sin">S/IVA</span>
+    <input class="gasto-importe sin" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-sin">S/IVA</span>
+    <input class="gasto-importe sin" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+  <div class="gasto-row">
+    <input class="gasto-nombre" type="text" placeholder="Concepto">
+    <span class="tag tag-sin">S/IVA</span>
+    <input class="gasto-importe sin" type="text" inputmode="decimal" placeholder="0">
+    <span class="unit">€</span>
+  </div>
+</div>
+
+<button class="btn-calc" type="button" onclick="calcular()">CALCULAR</button>
+
+<div class="resultado">
+  <div class="resultado-title">Resultado mensual</div>
+  <div id="desglose"><p style="color:var(--muted);font-size:0.75rem">Pulsa calcular para ver el resultado.</p></div>
+  <div class="total-line">
+    <span class="total-label">Neto limpio</span>
+    <span class="total-valor" id="total-neto">—</span>
+  </div>
+  <div class="aviso">⚠ El IRPF es el pago fraccionado mod.130 (20% sobre rendimiento neto). En la declaración anual puede salir diferencia según tu tramo.</div>
+</div>
+
+<script>
+var IVA = 0.21;
+var IRPF_RATE = 0.20;
+
+function num(v) { return parseFloat(String(v).replace(',', '.')) || 0; }
+
+function calcular() {
+  var cobroTotal = num(document.getElementById('ingreso').value);
+
+  var ivaInputs = document.querySelectorAll('.gasto-importe.iva');
+  var sinInputs = document.querySelectorAll('.gasto-importe.sin');
+
+  var totalIvaSoportado = 0;
+  var totalBaseGastosIva = 0;
+  var gastosIvaDetalle = [];
+  for (var i = 0; i < ivaInputs.length; i++) {
+    var imp = num(ivaInputs[i].value);
+    if (imp > 0) {
+      var baseG = imp / (1 + IVA);
+      totalIvaSoportado += imp - baseG;
+      totalBaseGastosIva += baseG;
+      var nombreEl = ivaInputs[i].parentNode.querySelector('.gasto-nombre');
+      gastosIvaDetalle.push({ nombre: nombreEl ? nombreEl.value : '', base: baseG });
+    }
+  }
+
+  var totalSinIva = 0;
+  var gastosSinDetalle = [];
+  for (var j = 0; j < sinInputs.length; j++) {
+    var impS = num(sinInputs[j].value);
+    if (impS > 0) {
+      totalSinIva += impS;
+      var nombreElS = sinInputs[j].parentNode.querySelector('.gasto-nombre');
+      gastosSinDetalle.push({ nombre: nombreElS ? nombreElS.value : '', importe: impS });
+    }
+  }
+
+  if (cobroTotal === 0) {
+    document.getElementById('desglose').innerHTML = '<p style="color:var(--muted);font-size:0.75rem">Introduce el cobro mensual.</p>';
+    document.getElementById('total-neto').textContent = '—';
+    return;
+  }
+
+  var base = cobroTotal / (1 + IVA);
+  var ivaRep = cobroTotal - base;
+  var ivaNet = ivaRep - totalIvaSoportado;
+  var rendNeto = base - totalBaseGastosIva - totalSinIva;
+  var irpf = rendNeto > 0 ? rendNeto * IRPF_RATE : 0;
+  var neto = cobroTotal - ivaNet - totalBaseGastosIva - totalSinIva - irpf;
+
+  var html = '';
+  html += linea('Cobro total', cobroTotal, true);
+  html += linea('IVA neto Hacienda (' + ivaRep.toFixed(0) + ' - ' + totalIvaSoportado.toFixed(0) + ')', ivaNet, false);
+  for (var k = 0; k < gastosIvaDetalle.length; k++) {
+    html += linea((gastosIvaDetalle[k].nombre || 'Gasto') + ' (base ' + gastosIvaDetalle[k].base.toFixed(0) + '€)', gastosIvaDetalle[k].base, false);
+  }
+  for (var l = 0; l < gastosSinDetalle.length; l++) {
+    html += linea(gastosSinDetalle[l].nombre || 'Gasto s/IVA', gastosSinDetalle[l].importe, false);
+  }
+  html += linea('IRPF mod.130 (20% s/ ' + rendNeto.toFixed(0) + '€)', irpf, false);
+
+  document.getElementById('desglose').innerHTML = html;
+  var totalEl = document.getElementById('total-neto');
+  totalEl.textContent = neto.toFixed(2) + ' €';
+  totalEl.className = 'total-valor' + (neto < 0 ? ' malo' : '');
+}
+
+function linea(concepto, valor, positivo) {
+  return '<div class="linea"><span class="concepto">' + concepto + '</span><span class="valor ' + (positivo ? 'pos' : 'neg') + '">' + (positivo ? '+' : '-') + Math.abs(valor).toFixed(2) + ' €</span></div>';
+}
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+</script>
+</body>
+</html>
